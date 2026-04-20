@@ -458,9 +458,10 @@ function onLabor(cod){
   const wrap=document.getElementById('f-labor-otra-wrap');
   wrap.style.display = isOtra?'block':'none';
   if(isOtra){
-    s.tipoLabor='';
+    s.tipoLabor=''; s.codigoLabor='';
+    document.getElementById('f-codlab').value='';
     document.getElementById('f-labor-otra').value='';
-    setTimeout(()=>document.getElementById('f-labor-otra').focus(),50);
+    setTimeout(()=>document.getElementById('f-codlab').focus(),50);
   } else {
     s.tipoLabor=LABORES[cod]||cod;
   }
