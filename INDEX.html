@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Órdenes de Trabajo — Terra Salto SRL</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#1B3A27;--verde2:#2D5A3D;--verde3:#4A7C59;--verde4:#C8DDD1;--verde5:#EEF5F1;
+  --tierra:#F4EFE6;--tierra2:#E8DFD0;--tierra3:#C9BCA8;
+  --txt:#1A1A18;--txt2:#5A5A50;--txt3:#8A8A7A;
+  --blanco:#FFFFFF;--rojo:#C0392B;--dorado:#8B6914;
+  --sombra:0 2px 8px rgba(27,58,39,.10);
+  --radio:8px;--radio-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Source Sans 3',sans-serif;font-size:14px;background:var(--tierra);color:var(--txt)}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+.topbar{
+  background:var(--verde);color:var(--blanco);
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  min-height:56px;flex-shrink:0;
+}
+.topbar-brand{display:flex;flex-direction:column;gap:1px}
+.topbar-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;letter-spacing:.01em}
+.topbar-sub{font-size:11px;opacity:.65;letter-spacing:.04em;text-transform:uppercase}
+.topbar-ot{
+  font-family:'Playfair Display',serif;font-size:13px;color:var(--verde4);
+  letter-spacing:.02em;font-style:italic
+}
+
+.navtabs{
+  background:var(--verde2);display:flex;padding:0 28px;gap:2px;flex-shrink:0;
+  border-bottom:3px solid var(--verde)
+}
+.navtab{
+  padding:11px 22px;font-size:13px;font-weight:600;color:rgba(255,255,255,.6);
+  border:none;background:none;cursor:pointer;letter-spacing:.02em;
+  border-bottom:3px solid transparent;margin-bottom:-3px;transition:color .15s,border-color .15s
+}
+.navtab:hover{color:rgba(255,255,255,.85)}
+.navtab.active{color:var(--blanco);border-bottom-color:var(--verde4)}
+
+.main{flex:1;padding:24px 28px;max-width:1000px;width:100%;margin:0 auto}
+
+/* ===== CARDS ===== */
+.card{background:var(--blanco);border:1px solid var(--tierra2);border-radius:var(--radio-lg);padding:20px;margin-bottom:16px;box-shadow:var(--sombra)}
+.card-title{
+  font-family:'Playfair Display',serif;font-size:14px;font-weight:600;
+  color:var(--verde);margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid var(--tierra2);letter-spacing:.01em
+}
+
+/* ===== FORM GRID ===== */
+.fg{display:grid;gap:12px}
+.fg-2{grid-template-columns:1fr 1fr}
+.fg-3{grid-template-columns:1fr 1fr 1fr}
+.fg-31{grid-template-columns:1fr 1fr 100px}
+.sp2{grid-column:span 2}.sp3{grid-column:span 3}
+
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em}
+.fld input,.fld select,.fld textarea{
+  border:1.5px solid var(--tierra3);border-radius:var(--radio);
+  padding:8px 11px;font-size:13.5px;font-family:'Source Sans 3',sans-serif;
+  background:var(--blanco);color:var(--txt);transition:border-color .15s
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--verde3)}
+.fld input[readonly]{background:var(--tierra);color:var(--txt2)}
+
+/* ===== PRODUCTS TABLE ===== */
+.pt-wrap{overflow-x:auto;margin-bottom:12px}
+.pt{width:100%;border-collapse:collapse;font-size:12.5px}
+.pt thead th{
+  background:var(--verde);color:var(--blanco);padding:8px 8px;
+  text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
+  white-space:nowrap
+}
+.pt tbody tr:nth-child(even){background:var(--tierra)}
+.pt tbody td{padding:4px 5px;border-bottom:1px solid var(--tierra2)}
+.pt tbody input,.pt tbody select{
+  width:100%;border:1px solid transparent;border-radius:5px;padding:4px 6px;
+  font-size:12.5px;font-family:'Source Sans 3',sans-serif;background:transparent;color:var(--txt)
+}
+.pt tbody input:focus,.pt tbody select:focus{
+  outline:none;border-color:var(--verde3);background:var(--blanco)
+}
+.pt .mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.pt .tot{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--verde2);text-align:right;padding:0 8px;white-space:nowrap}
+.pt .del-btn{background:none;border:none;cursor:pointer;color:var(--tierra3);font-size:18px;line-height:1;padding:0 4px;transition:color .15s}
+.pt .del-btn:hover{color:var(--rojo)}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:var(--radio);border:none;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:13px;font-weight:600;transition:all .15s;letter-spacing:.01em}
+.btn-primary{background:var(--verde);color:var(--blanco)}
+.btn-primary:hover{background:var(--verde2)}
+.btn-secondary{background:var(--verde5);color:var(--verde);border:1.5px solid var(--verde4)}
+.btn-secondary:hover{background:var(--verde4)}
+.btn-ghost{background:transparent;color:var(--txt2);border:1.5px solid var(--tierra3)}
+.btn-ghost:hover{background:var(--tierra);color:var(--txt)}
+.btn-danger{background:#FEF2F2;color:var(--rojo);border:1.5px solid #FCA5A5}
+.btn-danger:hover{background:#FEE2E2}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-add{background:var(--verde5);color:var(--verde);border:1.5px dashed var(--verde3);font-size:12.5px;padding:7px 14px;border-radius:var(--radio);cursor:pointer;font-family:'Source Sans 3',sans-serif;font-weight:600;transition:all .15s}
+.btn-add:hover{background:var(--verde4)}
+
+.action-bar{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;flex-wrap:wrap}
+
+/* ===== ARTICLES TAB ===== */
+.art-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.art-search{flex:1;min-width:200px;border:1.5px solid var(--tierra3);border-radius:var(--radio);padding:8px 12px;font-size:13px;font-family:'Source Sans 3',sans-serif}
+.art-search:focus{outline:none;border-color:var(--verde3)}
+
+.art-table{width:100%;border-collapse:collapse;font-size:13px}
+.art-table thead th{
+  background:var(--tierra2);color:var(--txt2);
+  padding:9px 12px;text-align:left;font-size:10.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--tierra3)
+}
+.art-table tbody tr{border-bottom:1px solid var(--tierra2);transition:background .12s}
+.art-table tbody tr:hover{background:var(--verde5)}
+.art-table td{padding:9px 12px;vertical-align:middle}
+.art-table .mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--txt2)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.04em}
+.badge-builtin{background:var(--verde5);color:var(--verde2)}
+.badge-custom{background:#FEF3C7;color:#92400E}
+.art-actions{display:flex;gap:6px;justify-content:flex-end}
+
+/* ===== MODAL ===== */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--blanco);border-radius:var(--radio-lg);padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--verde);margin-bottom:20px}
+.modal .fg{margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* ===== DOCUMENT PREVIEW ===== */
+.doc-wrap{background:var(--tierra2);padding:20px;border-radius:var(--radio-lg)}
+.doc{background:#fff;color:#111;padding:32px 36px;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.12);font-family:Georgia,serif;max-width:750px;margin:0 auto}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:2.5px solid #1B3A27;margin-bottom:16px}
+.dco{font-size:22px;font-weight:700;color:#1B3A27}
+.dcs{font-size:10px;color:#999;margin-top:3px;font-family:Arial,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.dbadge{background:#1B3A27;color:#fff;padding:10px 16px;border-radius:5px;text-align:right;font-family:Arial,sans-serif}
+.dbadge .dlbl{font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.08em}
+.dbadge .dnum{font-size:24px;font-weight:700;margin-top:3px}
+.dg{display:grid;gap:1px;background:#d0c8bc;border:1px solid #d0c8bc;border-radius:4px;overflow:hidden;margin-bottom:12px}
+.dc{background:#fff;padding:9px 12px}
+.dc .dl{font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.08em;font-family:Arial,sans-serif}
+.dc .dv{font-size:13px;font-weight:500;color:#111;margin-top:3px;font-family:Arial,sans-serif}
+.dsec{background:#1B3A27;color:#fff;padding:5px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:12px;font-family:Arial,sans-serif}
+.dtab{width:100%;border-collapse:collapse;border:1px solid #d0c8bc;font-size:11px;font-family:Arial,sans-serif}
+.dtab th{background:#f2ede4;padding:7px 9px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#777;border-bottom:1px solid #d0c8bc}
+.dtab td{padding:7px 9px;border-bottom:0.5px solid #ebe5d8}
+.dtab tr:last-child td{border-bottom:none}
+.dmono{font-family:'Courier New',monospace;font-size:10px}
+.dr{text-align:right}
+.dsigs{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:36px;padding-top:16px;border-top:1px solid #d0c8bc;font-family:Arial,sans-serif}
+.dsl{border-top:1px solid #333;margin-top:52px;padding-top:8px;font-size:10px;color:#666;text-align:center}
+.dobs{padding:10px 12px;border:1px solid #d0c8bc;font-size:12px;line-height:1.6;font-family:Arial,sans-serif;margin-top:0}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--verde);color:#fff;padding:12px 20px;border-radius:var(--radio);font-size:13px;font-weight:500;box-shadow:var(--sombra);z-index:200;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .topbar{padding:0 16px}.main{padding:16px}
+  .fg-2,.fg-3,.fg-31{grid-template-columns:1fr}.sp2,.sp3{grid-column:span 1}
+  .dsigs{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-name">Terra Salto SRL</div>
+    <div class="topbar-sub">Gestión de Campo · Santa Elena</div>
+  </div>
+  <div class="topbar-ot" id="topbar-ot-info">Orden de Trabajo</div>
+</div>
+
+<!-- NAV TABS -->
+<div class="navtabs">
+  <button class="navtab active" onclick="setTab('form')">Formulario</button>
+  <button class="navtab" onclick="setTab('preview')">Vista Previa</button>
+  <button class="navtab" onclick="setTab('arts')">Gestión de Artículos</button>
+</div>
+
+<!-- ===== TAB: FORMULARIO ===== -->
+<div id="tab-form" class="main">
+
+  <div class="card">
+    <div class="card-title">Datos generales</div>
+    <div class="fg fg-3">
+      <div class="fld"><label>N° de Orden</label><input id="f-num" value="102" oninput="s.numero=this.value;updateTopbar()"></div>
+      <div class="fld"><label>Campo</label><input id="f-campo" value="SANTA ELENA" oninput="s.campo=this.value"></div>
+      <div class="fld"><label>Campaña</label><input id="f-camp" value="25/26" oninput="s.campania=this.value"></div>
+      <div class="fld sp2"><label>Contratista</label><input id="f-cont" placeholder="Nombre del contratista…" oninput="s.contratista=this.value"></div>
+      <div class="fld"><label>Fecha</label><input id="f-fecha" oninput="s.fecha=this.value"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Labor</div>
+    <div class="fg fg-2">
+      <div class="fld">
+        <label>Tipo de labor</label>
+        <select id="f-labor" onchange="onLabor(this.value)">
+          <option value="99402">FUMIGACIÓN AÉREA</option>
+          <option value="99403">FUMIGACIÓN TERRESTRE</option>
+          <option value="99410">SIEMBRA</option>
+          <option value="99420">COSECHA</option>
+          <option value="99430">FERTILIZACIÓN AÉREA</option>
+          <option value="99431">FERTILIZACIÓN TERRESTRE</option>
+          <option value="99440">BARBECHO</option>
+          <option value="99450">OTRA</option>
+        </select>
+      </div>
+      <div class="fld"><label>Código de labor</label><input id="f-codlab" value="99402" oninput="s.codigoLabor=this.value"></div>
+      <div class="fld sp2"><label>Descripción detallada</label><input id="f-desclab" placeholder="Ej: PULVERIZACION AEREA MAIZ SANTA ELENA (SALTO)" oninput="s.descripcionLabor=this.value"></div>
+      <div class="fld sp2" id="f-labor-otra-wrap" style="display:none"><label>Nombre de la labor</label><input id="f-labor-otra" placeholder="Escribí el tipo de labor…" oninput="s.tipoLabor=this.value"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Superficie</div>
+    <div class="fg fg-31">
+      <div class="fld sp2"><label>Lotes</label><input id="f-lotes" placeholder="SE1, SE2, SE4E, SE5" oninput="s.lotes=this.value"></div>
+      <div class="fld">
+        <label>Cultivo</label>
+        <select id="f-cult" onchange="s.cultivo=this.value">
+          <option>MAÍZ</option><option>SOJA</option><option>TRIGO</option><option>GIRASOL</option><option>BARBECHO</option>
+        </select>
+      </div>
+      <div class="fld sp2"><label>Sementera / Descripción adicional</label><input id="f-sementera" placeholder="MAIZ — opción para detallar variedad u otro dato" oninput="s.sementera=this.value"></div>
+      <div class="fld"><label>Hectáreas</label><input id="f-has" type="number" placeholder="180" oninput="s.hectareas=this.value;recalc()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Insumos</div>
+    <datalist id="pdl"></datalist>
+    <div class="pt-wrap">
+      <table class="pt">
+        <thead><tr>
+          <th style="width:90px">Código Art</th>
+          <th>Producto / Descripción</th>
+          <th style="width:80px">Dosis/Ha</th>
+          <th style="width:48px">Und.</th>
+          <th style="width:90px">Total calc.</th>
+          <th style="width:88px">Stock disp.</th>
+          <th style="width:78px">Remitido</th>
+          <th style="width:78px">Devolución</th>
+          <th style="width:32px"></th>
+        </tr></thead>
+        <tbody id="ptb"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addProd()">+ Agregar insumo</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Observaciones</div>
+    <div class="fld"><textarea id="f-obs" rows="2" placeholder="Observaciones, indicaciones especiales, condiciones…" oninput="s.observaciones=this.value"></textarea></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-ghost" onclick="resetForm()">Nueva OT</button>
+    <button class="btn btn-secondary" onclick="setTab('preview')">Vista previa</button>
+    <button class="btn btn-primary" onclick="printOT()">Imprimir / PDF</button>
+  </div>
+</div>
+
+<!-- ===== TAB: PREVIEW ===== -->
+<div id="tab-preview" class="main" style="display:none">
+  <div class="action-bar" style="margin-bottom:16px">
+    <button class="btn btn-ghost" onclick="setTab('form')">← Volver al formulario</button>
+    <button class="btn btn-primary" onclick="printOT()">Imprimir / PDF</button>
+  </div>
+  <div class="doc-wrap">
+    <div id="doc-out"></div>
+  </div>
+</div>
+
+<!-- ===== TAB: ARTÍCULOS ===== -->
+<div id="tab-arts" class="main" style="display:none">
+  <div class="card">
+    <div class="card-title">Lista de artículos / insumos</div>
+    <div class="art-toolbar">
+      <input class="art-search" id="art-search" placeholder="Buscar por descripción, código…" oninput="renderArtTable()">
+      <button class="btn btn-primary" onclick="openModal()">+ Nuevo artículo</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="art-table">
+        <thead><tr>
+          <th>Cód. Terra Salto</th>
+          <th>Cód. Lucía / Código Art</th>
+          <th>Descripción</th>
+          <th>Unidad</th>
+          <th>Tipo</th>
+          <th style="text-align:right">Acciones</th>
+        </tr></thead>
+        <tbody id="art-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="exportProds()">Exportar JSON</button>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+        Importar JSON
+        <input type="file" accept=".json" style="display:none" onchange="importProds(this)">
+      </label>
+      <span style="margin-left:auto;font-size:12px;color:var(--txt3);align-self:center" id="art-count"></span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- MODAL ARTÍCULO -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Nuevo artículo</div>
+    <div class="fg">
+      <div class="fld"><label>Código Terra Salto (artículo TS)</label><input id="m-codts" placeholder="Ej: 670178"></div>
+      <div class="fld"><label>Código Lucía / LUCIA</label><input id="m-codluc" placeholder="Ej: 16150"></div>
+      <div class="fld"><label>Descripción del producto</label><input id="m-desc" placeholder="Ej: ROUNDUP XTRA x 20 LTS"></div>
+      <div class="fld">
+        <label>Unidad</label>
+        <select id="m-und"><option value="lt">lt</option><option value="kg">kg</option><option value="u">u</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveArt()">Guardar artículo</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== BUILT-IN PRODUCTS =====
+const BUILTIN=[
+  {codts:'670178',codluc:'16150',d:'2,4D ACADEMIX LV x 20L',u:'lt'},
+  {codts:'91717683',codluc:'16245',d:'2,4 D LV 68% Powerspray (20 litros)',u:'lt'},
+  {codts:'69629',codluc:'16170',d:'ABAMECTINA 3,6',u:'lt'},
+  {codts:'',codluc:'16258',d:'ACCELERON BASIC SOJA KL 1X1PCE COP AR',u:'u'},
+  {codts:'9145377',codluc:'16040',d:'ADENGO',u:'lt'},
+  {codts:'50534',codluc:'16138',d:'ATRAZINA 90 X 10 KG',u:'kg'},
+  {codts:'',codluc:'16160',d:'ATRAZINA (TECNOMIL) 15KG',u:'kg'},
+  {codts:'9141510',codluc:'16163',d:'BELT SC480 X1LT',u:'lt'},
+  {codts:'69634',codluc:'16188',d:'BIFENTRIN SERPICO 20 NOVA X 1L',u:'lt'},
+  {codts:'9141206',codluc:'16180',d:'BRODAL X 5 L',u:'lt'},
+  {codts:'69644',codluc:'16156',d:'CAPAZ 50 SC FMC',u:'lt'},
+  {codts:'',codluc:'16142',d:'CLETODIN 24% (20 LTS)',u:'lt'},
+  {codts:'79221878',codluc:'16104',d:'CRIPTON SC325 X 5L',u:'lt'},
+  {codts:'',codluc:'16162',d:'CRIPTON XPRO (BAYER) 1LTS',u:'lt'},
+  {codts:'85838741',codluc:'16166',d:'CRIPTON XPRO X 10L BOT AR',u:'lt'},
+  {codts:'9141739',codluc:'16029',d:'DECIS FLOW x 1 lt',u:'lt'},
+  {codts:'9141701',codluc:'16190',d:'DECIS FORTE x 5 L',u:'lt'},
+  {codts:'50019',codluc:'16009',d:'DICAMBA HERBICIDA x LT',u:'lt'},
+  {codts:'670153',codluc:'16201',d:'FERTIACTYIL GZ X10L',u:'lt'},
+  {codts:'12076156',codluc:'16187',d:'FLUMY SC x 5 Lts',u:'lt'},
+  {codts:'10434277',codluc:'16154',d:'HARNESS X 20 LT',u:'lt'},
+  {codts:'58035',codluc:'16008',d:'HEAT TM BASF x 0,35 gr',u:'kg'},
+  {codts:'',codluc:'16247',d:'IBLON PRO X5L',u:'lt'},
+  {codts:'670179',codluc:'16220',d:'IMIDA 35 X 1L',u:'lt'},
+  {codts:'670152',codluc:'19198',d:'IMIDA 60 X 1L',u:'lt'},
+  {codts:'86779676',codluc:'16157',d:'LATIUM SUPER EC360 X10L BOT AR',u:'lt'},
+  {codts:'85386212',codluc:'16116',d:'LAUDIS X5L BOT AR',u:'lt'},
+  {codts:'69629',codluc:'16185',d:'NUTRITION GROW',u:'lt'},
+  {codts:'9148125',codluc:'16158',d:'OPTIMIZER x 10 LT',u:'lt'},
+  {codts:'670165',codluc:'16095',d:'PARAQUAT HERBICIDA LTS',u:'lt'},
+  {codts:'80488793',codluc:'16182',d:'PERCUTOR X900 GR',u:'kg'},
+  {codts:'12331311',codluc:'16012',d:'ROUNDUP CONTROLMAX x 15KG',u:'kg'},
+  {codts:'30146700',codluc:'16218',d:'ROUNDUP TOP X 20LTS',u:'lt'},
+  {codts:'670225',codluc:'16141',d:'S-METOLACLOR',u:'lt'},
+  {codts:'',codluc:'16246',d:'SENCOREX X 10L',u:'lt'},
+  {codts:'9141130',codluc:'16018',d:'SOLOMON X 5LT',u:'lt'},
+  {codts:'8009',codluc:'16227',d:'SPEEDWET XION ACTIVEGEL',u:'lt'},
+  {codts:'',codluc:'16257',d:'GLACIER (Sulfato de Amonio)',u:'kg'},
+  {codts:'670222',codluc:'16216',d:'SUPER NOVA COADYUVANTE x 1 LT',u:'lt'},
+];
+
+const LABORES={
+  '99402':'FUMIGACIÓN AÉREA','99403':'FUMIGACIÓN TERRESTRE',
+  '99410':'SIEMBRA','99420':'COSECHA',
+  '99430':'FERTILIZACIÓN AÉREA','99431':'FERTILIZACIÓN TERRESTRE',
+  '99440':'BARBECHO','99450':'OTRA'
+};
+
+// ===== STATE =====
+let customProds = JSON.parse(localStorage.getItem('ots_custom_prods')||'[]');
+let editingArtId = null;
+let pid = 1;
+
+let s = {
+  numero:'102', campo:'SANTA ELENA', campania:'25/26',
+  contratista:'', fecha:'', codigoLabor:'99402',
+  tipoLabor:'FUMIGACIÓN AÉREA', descripcionLabor:'',
+  lotes:'', sementera:'', cultivo:'MAÍZ',
+  hectareas:'', observaciones:'',
+  productos:[{id:pid++, codts:'', codluc:'', descripcion:'', dosisPorHa:'', unidad:'lt', stockDisponible:'', remitido:'', devolucion:''}]
+};
+
+// ===== HELPERS =====
+function allProds(){
+  return [...BUILTIN,...customProds];
+}
+function pad(n){return String(n||'').padStart(3,'0')}
+function fmtn(n){
+  const x=parseFloat(n);
+  if(isNaN(x)||x===0) return '';
+  return x%1===0?x.toFixed(0):parseFloat(x.toFixed(3)).toString();
+}
+function calcTotal(p){
+  return (parseFloat(p.dosisPorHa)||0)*(parseFloat(s.hectareas)||0);
+}
+function saveCustom(){
+  localStorage.setItem('ots_custom_prods', JSON.stringify(customProds));
+}
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ===== TABS =====
+function setTab(t){
+  ['form','preview','arts'].forEach(id=>{
+    document.getElementById('tab-'+id).style.display = id===t?'block':'none';
+  });
+  document.querySelectorAll('.navtab').forEach((el,i)=>{
+    el.classList.toggle('active',['form','preview','arts'][i]===t);
+  });
+  if(t==='preview') document.getElementById('doc-out').innerHTML=buildDoc();
+  if(t==='arts') renderArtTable();
+}
+
+// ===== TOPBAR =====
+function updateTopbar(){
+  document.getElementById('topbar-ot-info').textContent =
+    'OT SE-'+pad(s.numero)+(s.campo?' · '+s.campo:'');
+}
+
+// ===== LABOR =====
+function onLabor(cod){
+  s.codigoLabor=cod;
+  const isOtra = cod==='99450';
+  const wrap=document.getElementById('f-labor-otra-wrap');
+  wrap.style.display = isOtra?'block':'none';
+  if(isOtra){
+    s.tipoLabor='';
+    document.getElementById('f-labor-otra').value='';
+    setTimeout(()=>document.getElementById('f-labor-otra').focus(),50);
+  } else {
+    s.tipoLabor=LABORES[cod]||cod;
+  }
+  document.getElementById('f-codlab').value=cod;
+}
+
+// ===== DATALIST =====
+function rebuildDatalist(){
+  const dl=document.getElementById('pdl');
+  dl.innerHTML='';
+  allProds().forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.d; dl.appendChild(o);
+  });
+}
+
+// ===== PRODUCT ROWS =====
+function recalc(){
+  s.productos.forEach(p=>{
+    const el=document.querySelector('.tot-'+p.id);
+    if(!el) return;
+    const t=calcTotal(p);
+    el.textContent = t>0?(fmtn(t)+' '+p.unidad):'—';
+  });
+}
+
+function onDescInput(id, val){
+  const p=s.productos.find(x=>x.id===id);
+  if(!p) return;
+  p.descripcion=val;
+  const found=allProds().find(x=>x.d===val);
+  if(found){
+    p.codts=found.codts||''; p.codluc=found.codluc||''; p.unidad=found.u;
+    const row=document.getElementById('pr-'+id);
+    if(row){
+      row.querySelector('.fcodluc').value=p.codluc;
+      row.querySelector('.fund').value=p.unidad;
+    }
+    recalc();
+  }
+}
+
+function upd(id,field,val){
+  const p=s.productos.find(x=>x.id===id);
+  if(p){ p[field]=val; if(field==='dosisPorHa') recalc(); }
+}
+
+function removeProd(id){
+  s.productos=s.productos.filter(x=>x.id!==id);
+  const row=document.getElementById('pr-'+id);
+  if(row) row.remove();
+}
+
+function addProd(){
+  const p={id:pid++,codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',stockDisponible:'',remitido:'',devolucion:''};
+  s.productos.push(p);
+  renderRow(p);
+}
+
+function renderRow(p){
+  const tb=document.getElementById('ptb');
+  const tr=document.createElement('tr');
+  tr.id='pr-'+p.id;
+  tr.innerHTML=`
+    <td><input class="mono fcodluc" value="${p.codluc}" placeholder="—" oninput="upd(${p.id},'codluc',this.value)" style="font-size:11px"></td>
+    <td><input list="pdl" value="${p.descripcion}" oninput="onDescInput(${p.id},this.value)" placeholder="Buscar o escribir producto…" style="width:100%"></td>
+    <td><input type="number" step="0.001" value="${p.dosisPorHa}" oninput="upd(${p.id},'dosisPorHa',this.value)"></td>
+    <td><select class="fund" onchange="upd(${p.id},'unidad',this.value)">
+      <option${p.unidad=='lt'?' selected':''}>lt</option>
+      <option${p.unidad=='kg'?' selected':''}>kg</option>
+      <option${p.unidad=='u'?' selected':''}>u</option>
+    </select></td>
+    <td class="tot tot-${p.id}">—</td>
+    <td><input type="number" step="0.1" value="${p.stockDisponible}" oninput="upd(${p.id},'stockDisponible',this.value)"></td>
+    <td><input type="number" step="0.1" value="${p.remitido}" oninput="upd(${p.id},'remitido',this.value)"></td>
+    <td><input type="number" step="0.1" value="${p.devolucion}" oninput="upd(${p.id},'devolucion',this.value)"></td>
+    <td><button class="del-btn" onclick="removeProd(${p.id})">×</button></td>`;
+  tb.appendChild(tr);
+}
+
+// ===== ARTICLES TABLE =====
+function renderArtTable(){
+  const q=(document.getElementById('art-search').value||'').toLowerCase();
+  const all=allProds();
+  const filtered=q? all.filter(p=>p.d.toLowerCase().includes(q)||p.codts.includes(q)||p.codluc.includes(q)):all;
+  
+  const builtinSet=new Set(BUILTIN.map(p=>p.codluc+'|'+p.d));
+  
+  const tb=document.getElementById('art-tbody');
+  tb.innerHTML=filtered.map(p=>{
+    const isCustom=!builtinSet.has(p.codluc+'|'+p.d);
+    const cid=customProds.findIndex(x=>x.codluc===p.codluc&&x.d===p.d);
+    return `<tr>
+      <td class="mono">${p.codts||'—'}</td>
+      <td class="mono">${p.codluc||'—'}</td>
+      <td><strong>${p.d}</strong></td>
+      <td><span class="mono">${p.u}</span></td>
+      <td><span class="badge ${isCustom?'badge-custom':'badge-builtin'}">${isCustom?'Personalizado':'Base'}</span></td>
+      <td class="art-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editArt(${isCustom?cid:-1},'${escape(p.d)}','${p.codts}','${p.codluc}','${p.u}')">Editar</button>
+        ${isCustom?`<button class="btn btn-danger btn-sm" onclick="deleteArt(${cid})">Eliminar</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+  
+  document.getElementById('art-count').textContent=`${filtered.length} de ${all.length} artículos`;
+}
+
+// ===== MODAL =====
+function openModal(id=null,d='',codts='',codluc='',u='lt'){
+  editingArtId=id;
+  document.getElementById('modal-title').textContent = id!==null?'Editar artículo':'Nuevo artículo';
+  document.getElementById('m-codts').value=codts;
+  document.getElementById('m-codluc').value=codluc;
+  document.getElementById('m-desc').value=d;
+  document.getElementById('m-und').value=u;
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('m-desc').focus(),50);
+}
+function closeModal(){ document.getElementById('modal-bg').classList.remove('open'); editingArtId=null; }
+function editArt(cid,d,codts,codluc,u){ openModal(cid,unescape(d),codts,codluc,u); }
+
+function saveArt(){
+  const codts=document.getElementById('m-codts').value.trim();
+  const codluc=document.getElementById('m-codluc').value.trim();
+  const d=document.getElementById('m-desc').value.trim();
+  const u=document.getElementById('m-und').value;
+  if(!d){ alert('La descripción es obligatoria.'); return; }
+  const obj={codts,codluc,d,u};
+  if(editingArtId!==null && editingArtId>=0){
+    customProds[editingArtId]=obj;
+    toast('Artículo actualizado');
+  } else {
+    customProds.push(obj);
+    toast('Artículo agregado');
+  }
+  saveCustom(); rebuildDatalist(); closeModal(); renderArtTable();
+}
+
+function deleteArt(cid){
+  if(!confirm('¿Eliminar este artículo personalizado?')) return;
+  customProds.splice(cid,1);
+  saveCustom(); rebuildDatalist(); renderArtTable();
+  toast('Artículo eliminado');
+}
+
+function exportProds(){
+  const blob=new Blob([JSON.stringify(customProds,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='articulos_personalizados.json'; a.click();
+}
+function importProds(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!Array.isArray(data)) throw new Error();
+      customProds=[...customProds,...data];
+      saveCustom(); rebuildDatalist(); renderArtTable();
+      toast(data.length+' artículos importados');
+    } catch(err){ alert('El archivo no tiene el formato correcto.'); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ===== DOCUMENT BUILD =====
+function buildDoc(){
+  const prs=s.productos.filter(p=>p.descripcion);
+  const rows=prs.map(p=>{
+    const t=calcTotal(p);
+    return `<tr>
+      <td class="dmono">${p.codluc||'—'}</td>
+      <td>${p.descripcion}</td>
+      <td class="dr dmono">${fmtn(p.dosisPorHa)||'—'} ${p.unidad}</td>
+      <td class="dr dmono" style="color:#1B3A27;font-weight:700">${t>0?fmtn(t)+' '+p.unidad:'—'}</td>
+      <td class="dr dmono">${p.stockDisponible||'_______'}</td>
+      <td class="dr dmono">${p.remitido||'_______'}</td>
+      <td class="dr dmono">${p.devolucion||'_______'}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="doc">
+    <div class="dh">
+      <div>
+        <div class="dco">TERRA SALTO SRL</div>
+        <div class="dcs">Gestión Agronómica · Agroinsumos</div>
+      </div>
+      <div class="dbadge">
+        <div class="dlbl">Orden de Trabajo</div>
+        <div class="dnum">SE-${pad(s.numero)}</div>
+      </div>
+    </div>
+
+    <div class="dg" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="dc"><div class="dl">Campo</div><div class="dv">${s.campo||'—'}</div></div>
+      <div class="dc"><div class="dl">Campaña</div><div class="dv">${s.campania||'—'}</div></div>
+      <div class="dc"><div class="dl">Fecha</div><div class="dv">${s.fecha||'—'}</div></div>
+      <div class="dc" style="grid-column:span 2"><div class="dl">Contratista</div><div class="dv">${s.contratista||'—'}</div></div>
+      <div class="dc"><div class="dl">N° de Orden</div><div class="dv dmono">SE-${pad(s.numero)}</div></div>
+    </div>
+
+    <div class="dsec">Labor</div>
+    <div class="dg" style="grid-template-columns:110px 1fr;margin-top:0">
+      <div class="dc"><div class="dl">Código</div><div class="dv dmono">${s.codigoLabor||'—'}</div></div>
+      <div class="dc"><div class="dl">Tipo</div><div class="dv">${s.tipoLabor||'—'}</div></div>
+      <div class="dc" style="grid-column:span 2"><div class="dl">Descripción detallada</div><div class="dv">${s.descripcionLabor||'—'}</div></div>
+    </div>
+
+    <div class="dsec">Superficie</div>
+    <div class="dg" style="grid-template-columns:1fr 130px 120px;margin-top:0">
+      <div class="dc"><div class="dl">Lotes</div><div class="dv">${s.lotes||'—'}</div></div>
+      <div class="dc"><div class="dl">Cultivo / Sementera</div><div class="dv">${s.cultivo+(s.sementera?' — '+s.sementera:'')}</div></div>
+      <div class="dc"><div class="dl">Hectáreas</div><div class="dv dmono">${s.hectareas||'—'} ha</div></div>
+    </div>
+
+    <div class="dsec">Insumos</div>
+    <table class="dtab">
+      <thead><tr>
+        <th>Código Art</th><th>Descripción</th>
+        <th class="dr">Dosis/Ha</th>
+        <th class="dr">Total</th>
+        <th class="dr">Stock disp.</th>
+        <th class="dr">Remitido</th>
+        <th class="dr">Devolución</th>
+      </tr></thead>
+      <tbody>${rows||'<tr><td colspan="8" style="color:#aaa;text-align:center;padding:14px;font-family:Arial">Sin insumos cargados</td></tr>'}</tbody>
+    </table>
+
+    ${s.observaciones?`<div class="dsec">Observaciones</div><div class="dobs">${s.observaciones}</div>`:''}
+
+    <div class="dsigs">
+      <div><div class="dsl"><strong>TERRA SALTO SRL</strong><br>Responsable / Firma</div></div>
+      <div><div class="dsl"><strong>${s.contratista||'CONTRATISTA'}</strong><br>Firma y Aclaración</div></div>
+    </div>
+  </div>`;
+}
+
+// ===== PRINT =====
+function syncFromForm(){
+  s.numero=document.getElementById('f-num').value;
+  s.campo=document.getElementById('f-campo').value;
+  s.campania=document.getElementById('f-camp').value;
+  s.contratista=document.getElementById('f-cont').value;
+  s.fecha=document.getElementById('f-fecha').value;
+  s.descripcionLabor=document.getElementById('f-desclab').value;
+  s.lotes=document.getElementById('f-lotes').value;
+  s.sementera=document.getElementById('f-sementera').value;
+  s.observaciones=document.getElementById('f-obs').value;
+}
+
+function printOT(){
+  syncFromForm();
+  const docHTML=buildDoc();
+  const css=`<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,Helvetica,sans-serif;margin:24px;font-size:12px;color:#111}
+  @media print{body{margin:12mm 14mm}}
+  .doc{max-width:none}
+  .dh{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:2.5px solid #1B3A27;margin-bottom:14px}
+  .dco{font-size:22px;font-weight:700;color:#1B3A27;font-family:Georgia,serif}
+  .dcs{font-size:10px;color:#999;margin-top:3px;letter-spacing:.04em;text-transform:uppercase}
+  .dbadge{background:#1B3A27;color:#fff;padding:10px 16px;border-radius:4px;text-align:right}
+  .dbadge .dlbl{font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.08em}
+  .dbadge .dnum{font-size:24px;font-weight:700;margin-top:3px}
+  .dg{display:grid;gap:1px;background:#ccc;border:1px solid #ccc;border-radius:3px;overflow:hidden;margin-bottom:10px}
+  .dc{background:#fff;padding:8px 10px}
+  .dc .dl{font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.08em}
+  .dc .dv{font-size:12px;font-weight:500;color:#111;margin-top:2px}
+  .dsec{background:#1B3A27;color:#fff;padding:4px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:10px}
+  .dtab{width:100%;border-collapse:collapse;border:1px solid #ccc}
+  .dtab th{background:#f2ede4;padding:6px 8px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#777;border-bottom:1px solid #ccc}
+  .dtab td{padding:6px 8px;border-bottom:0.5px solid #ebe5d8;font-size:11px}
+  .dtab tr:last-child td{border-bottom:none}
+  .dmono{font-family:'Courier New',monospace;font-size:10px}
+  .dr{text-align:right}
+  .dobs{padding:8px 10px;border:1px solid #ccc;font-size:11px;line-height:1.6;margin-top:0}
+  .dsigs{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:36px;padding-top:14px;border-top:1px solid #ccc}
+  .dsl{border-top:1px solid #333;margin-top:52px;padding-top:6px;font-size:10px;color:#666;text-align:center}
+  </style>`;
+  const win=window.open('','_blank','width=860,height=700');
+  if(!win){alert('Habilitá las ventanas emergentes (pop-ups) para poder imprimir.');return;}
+  win.document.write(`<!DOCTYPE html><html><head><title>OT SE-${pad(s.numero)} — Terra Salto SRL</title>${css}</head><body>${docHTML}</body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),400);
+}
+
+// ===== RESET =====
+function resetForm(){
+  if(!confirm('¿Limpiar el formulario para una nueva OT?')) return;
+  pid=1; s.numero=String(parseInt(s.numero||102)+1);
+  s.contratista=''; s.descripcionLabor=''; s.lotes=''; s.sementera=''; s.hectareas=''; s.observaciones='';
+  s.productos=[{id:pid++,codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',stockDisponible:'',remitido:'',devolucion:''}];
+  document.getElementById('f-num').value=s.numero;
+  document.getElementById('f-cont').value='';
+  document.getElementById('f-desclab').value='';
+  document.getElementById('f-lotes').value='';
+  document.getElementById('f-sementera').value='';
+  document.getElementById('f-has').value='';
+  document.getElementById('f-obs').value='';
+  document.getElementById('ptb').innerHTML='';
+  renderRow(s.productos[0]);
+  updateTopbar();
+  toast('Formulario limpio — OT '+s.numero);
+}
+
+// ===== INIT =====
+document.getElementById('f-fecha').value=new Date().toLocaleDateString('es-AR');
+s.fecha=document.getElementById('f-fecha').value;
+renderRow(s.productos[0]);
+rebuildDatalist();
+updateTopbar();
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+</script>
+</body>
+</html>
