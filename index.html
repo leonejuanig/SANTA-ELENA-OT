@@ -191,6 +191,7 @@ html,body{height:100%;font-family:'Source Sans 3',sans-serif;font-size:14px;back
   <button class="navtab active" onclick="setTab('form')">Formulario</button>
   <button class="navtab" onclick="setTab('preview')">Vista Previa</button>
   <button class="navtab" onclick="setTab('arts')">Gestión de Artículos</button>
+  <button class="navtab" onclick="setTab('hist')">Mis OTs</button>
 </div>
 
 <!-- ===== TAB: FORMULARIO ===== -->
@@ -240,7 +241,7 @@ html,body{height:100%;font-family:'Source Sans 3',sans-serif;font-size:14px;back
         </select>
       </div>
       <div class="fld sp2"><label>Sementera / Descripción adicional</label><input id="f-sementera" placeholder="MAIZ — opción para detallar variedad u otro dato" oninput="s.sementera=this.value"></div>
-      <div class="fld"><label>Hectáreas</label><input id="f-has" type="number" placeholder="180" oninput="s.hectareas=this.value;recalc()"></div>
+      <div class="fld"><label>Hectáreas</label><input id="f-has" type="number" placeholder="180" oninput="s.hectareas=this.value"></div>
     </div>
   </div>
 
@@ -254,7 +255,7 @@ html,body{height:100%;font-family:'Source Sans 3',sans-serif;font-size:14px;back
           <th>Producto / Descripción</th>
           <th style="width:80px">Dosis/Ha</th>
           <th style="width:48px">Und.</th>
-          <th style="width:90px">Total calc.</th>
+          <th style="width:90px">Total</th>
           <th style="width:88px">Stock disp.</th>
           <th style="width:78px">Remitido</th>
           <th style="width:78px">Devolución</th>
@@ -273,6 +274,11 @@ html,body{height:100%;font-family:'Source Sans 3',sans-serif;font-size:14px;back
 
   <div class="action-bar">
     <button class="btn btn-ghost" onclick="resetForm()">Nueva OT</button>
+    <label class="btn btn-ghost" style="cursor:pointer">
+      Abrir OT…
+      <input type="file" accept=".json" style="display:none" onchange="openOTFile(this)">
+    </label>
+    <button class="btn btn-secondary" onclick="saveOT()">💾 Guardar OT en mi PC</button>
     <button class="btn btn-secondary" onclick="setTab('preview')">Vista previa</button>
     <button class="btn btn-primary" onclick="printOT()">Imprimir / PDF</button>
   </div>
@@ -317,6 +323,36 @@ html,body{height:100%;font-family:'Source Sans 3',sans-serif;font-size:14px;back
         <input type="file" accept=".json" style="display:none" onchange="importProds(this)">
       </label>
       <span style="margin-left:auto;font-size:12px;color:var(--txt3);align-self:center" id="art-count"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: MIS OTs ===== -->
+<div id="tab-hist" class="main" style="display:none">
+  <div class="card">
+    <div class="card-title">Órdenes de Trabajo guardadas</div>
+    <p style="font-size:12.5px;color:var(--txt2);margin-bottom:14px;line-height:1.5">
+      Cada vez que apretás "Guardar OT en mi PC" se descarga un archivo <code>.json</code> a tu computadora y además queda un acceso rápido acá abajo (guardado en este navegador). Para volver a abrir una OT que ya descargaste en otro momento, usá "Abrir OT desde archivo…".
+    </p>
+    <div style="overflow-x:auto">
+      <table class="art-table">
+        <thead><tr>
+          <th>N° Orden</th>
+          <th>Campo</th>
+          <th>Fecha</th>
+          <th>Cultivo</th>
+          <th>Lotes</th>
+          <th style="text-align:right">Acciones</th>
+        </tr></thead>
+        <tbody id="hist-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+        Abrir OT desde archivo…
+        <input type="file" accept=".json" style="display:none" onchange="openOTFile(this)">
+      </label>
+      <span style="margin-left:auto;font-size:12px;color:var(--txt3)" id="hist-count"></span>
     </div>
   </div>
 </div>
@@ -408,7 +444,7 @@ let s = {
   tipoLabor:'FUMIGACIÓN AÉREA', descripcionLabor:'',
   lotes:'', sementera:'', cultivo:'MAÍZ',
   hectareas:'', observaciones:'',
-  productos:[{id:pid++, codts:'', codluc:'', descripcion:'', dosisPorHa:'', unidad:'lt', stockDisponible:'', remitido:'', devolucion:''}]
+  productos:[{id:pid++, codts:'', codluc:'', descripcion:'', dosisPorHa:'', unidad:'lt', total:'', stockDisponible:'', remitido:'', devolucion:''}]
 };
 
 // ===== HELPERS =====
@@ -421,9 +457,6 @@ function fmtn(n){
   if(isNaN(x)||x===0) return '';
   return x%1===0?x.toFixed(0):parseFloat(x.toFixed(3)).toString();
 }
-function calcTotal(p){
-  return (parseFloat(p.dosisPorHa)||0)*(parseFloat(s.hectareas)||0);
-}
 function saveCustom(){
   localStorage.setItem('ots_custom_prods', JSON.stringify(customProds));
 }
@@ -435,14 +468,15 @@ function toast(msg){
 
 // ===== TABS =====
 function setTab(t){
-  ['form','preview','arts'].forEach(id=>{
+  ['form','preview','arts','hist'].forEach(id=>{
     document.getElementById('tab-'+id).style.display = id===t?'block':'none';
   });
   document.querySelectorAll('.navtab').forEach((el,i)=>{
-    el.classList.toggle('active',['form','preview','arts'][i]===t);
+    el.classList.toggle('active',['form','preview','arts','hist'][i]===t);
   });
   if(t==='preview') document.getElementById('doc-out').innerHTML=buildDoc();
   if(t==='arts') renderArtTable();
+  if(t==='hist') renderHistTable();
 }
 
 // ===== TOPBAR =====
@@ -479,15 +513,6 @@ function rebuildDatalist(){
 }
 
 // ===== PRODUCT ROWS =====
-function recalc(){
-  s.productos.forEach(p=>{
-    const el=document.querySelector('.tot-'+p.id);
-    if(!el) return;
-    const t=calcTotal(p);
-    el.textContent = t>0?(fmtn(t)+' '+p.unidad):'—';
-  });
-}
-
 function onDescInput(id, val){
   const p=s.productos.find(x=>x.id===id);
   if(!p) return;
@@ -500,13 +525,12 @@ function onDescInput(id, val){
       row.querySelector('.fcodluc').value=p.codluc;
       row.querySelector('.fund').value=p.unidad;
     }
-    recalc();
   }
 }
 
 function upd(id,field,val){
   const p=s.productos.find(x=>x.id===id);
-  if(p){ p[field]=val; if(field==='dosisPorHa') recalc(); }
+  if(p){ p[field]=val; }
 }
 
 function removeProd(id){
@@ -516,7 +540,7 @@ function removeProd(id){
 }
 
 function addProd(){
-  const p={id:pid++,codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',stockDisponible:'',remitido:'',devolucion:''};
+  const p={id:pid++,codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',total:'',stockDisponible:'',remitido:'',devolucion:''};
   s.productos.push(p);
   renderRow(p);
 }
@@ -534,7 +558,7 @@ function renderRow(p){
       <option${p.unidad=='kg'?' selected':''}>kg</option>
       <option${p.unidad=='u'?' selected':''}>u</option>
     </select></td>
-    <td class="tot tot-${p.id}">—</td>
+    <td><input class="mono" type="number" step="0.001" value="${p.total||''}" oninput="upd(${p.id},'total',this.value)" placeholder="—"></td>
     <td><input type="number" step="0.1" value="${p.stockDisponible}" oninput="upd(${p.id},'stockDisponible',this.value)"></td>
     <td><input type="number" step="0.1" value="${p.remitido}" oninput="upd(${p.id},'remitido',this.value)"></td>
     <td><input type="number" step="0.1" value="${p.devolucion}" oninput="upd(${p.id},'devolucion',this.value)"></td>
@@ -633,12 +657,11 @@ function importProds(input){
 function buildDoc(){
   const prs=s.productos.filter(p=>p.descripcion);
   const rows=prs.map(p=>{
-    const t=calcTotal(p);
     return `<tr>
       <td class="dmono">${p.codluc||'—'}</td>
       <td>${p.descripcion}</td>
       <td class="dr dmono">${fmtn(p.dosisPorHa)||'—'} ${p.unidad}</td>
-      <td class="dr dmono" style="color:#1B3A27;font-weight:700">${t>0?fmtn(t)+' '+p.unidad:'—'}</td>
+      <td class="dr dmono" style="color:#1B3A27;font-weight:700">${p.total?p.total+' '+p.unidad:'—'}</td>
       <td class="dr dmono">${p.stockDisponible||'_______'}</td>
       <td class="dr dmono">${p.remitido||'_______'}</td>
       <td class="dr dmono">${p.devolucion||'_______'}</td>
@@ -750,12 +773,124 @@ function printOT(){
   setTimeout(()=>win.print(),400);
 }
 
+// ===== GUARDAR / ABRIR OTs EN LA PC =====
+let histCache = [];
+
+function downloadOTFile(snap){
+  const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  const campo=(snap.campo||'').trim().replace(/[^a-zA-Z0-9]+/g,'_')||'SIN_CAMPO';
+  const fecha=(snap.fecha||'').replace(/[\/\\]/g,'-')||'sin_fecha';
+  a.download=`OT_SE-${pad(snap.numero)}_${campo}_${fecha}.json`;
+  a.click();
+}
+
+function saveOT(){
+  syncFromForm();
+  const snap=JSON.parse(JSON.stringify(s));
+  snap._savedAt=new Date().toISOString();
+  snap._id=snap._savedAt+'-'+snap.numero;
+
+  let hist=JSON.parse(localStorage.getItem('ots_history')||'[]');
+  const idx=hist.findIndex(x=>x.numero===snap.numero);
+  if(idx>=0) hist[idx]=snap; else hist.push(snap);
+  localStorage.setItem('ots_history', JSON.stringify(hist));
+
+  downloadOTFile(snap);
+  toast('OT SE-'+pad(snap.numero)+' guardada y descargada');
+  if(document.getElementById('tab-hist').style.display!=='none') renderHistTable();
+}
+
+function loadOT(data){
+  pid=1;
+  const prods=(data.productos&&data.productos.length?data.productos:[{codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',total:'',stockDisponible:'',remitido:'',devolucion:''}])
+    .map(p=>({...p,id:pid++}));
+  s={
+    numero:data.numero||'', campo:data.campo||'', campania:data.campania||'',
+    contratista:data.contratista||'', fecha:data.fecha||'', codigoLabor:data.codigoLabor||'',
+    tipoLabor:data.tipoLabor||'', descripcionLabor:data.descripcionLabor||'',
+    lotes:data.lotes||'', sementera:data.sementera||'', cultivo:data.cultivo||'MAÍZ',
+    hectareas:data.hectareas||'', observaciones:data.observaciones||'',
+    productos:prods
+  };
+
+  document.getElementById('f-num').value=s.numero;
+  document.getElementById('f-campo').value=s.campo;
+  document.getElementById('f-camp').value=s.campania;
+  document.getElementById('f-cont').value=s.contratista;
+  document.getElementById('f-fecha').value=s.fecha;
+
+  const isOtra = !LABORES[s.codigoLabor];
+  document.getElementById('f-labor-otra-wrap').style.display = isOtra?'block':'none';
+  if(!isOtra){ document.getElementById('f-labor').value=s.codigoLabor; }
+  document.getElementById('f-codlab').value=s.codigoLabor;
+  document.getElementById('f-labor-otra').value=isOtra?s.tipoLabor:'';
+
+  document.getElementById('f-desclab').value=s.descripcionLabor;
+  document.getElementById('f-lotes').value=s.lotes;
+  document.getElementById('f-cult').value=s.cultivo;
+  document.getElementById('f-sementera').value=s.sementera;
+  document.getElementById('f-has').value=s.hectareas;
+  document.getElementById('f-obs').value=s.observaciones;
+
+  document.getElementById('ptb').innerHTML='';
+  s.productos.forEach(p=>renderRow(p));
+  updateTopbar();
+  setTab('form');
+}
+
+function openOTFile(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data || typeof data!=='object') throw new Error();
+      loadOT(data);
+      toast('OT SE-'+pad(data.numero)+' cargada');
+    } catch(err){ alert('El archivo no tiene el formato correcto.'); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function renderHistTable(){
+  histCache=JSON.parse(localStorage.getItem('ots_history')||'[]');
+  histCache.sort((a,b)=>(b._savedAt||'').localeCompare(a._savedAt||''));
+  const tb=document.getElementById('hist-tbody');
+  tb.innerHTML = histCache.length ? histCache.map((h,i)=>`<tr>
+      <td class="mono">SE-${pad(h.numero)}</td>
+      <td>${h.campo||'—'}</td>
+      <td>${h.fecha||'—'}</td>
+      <td>${h.cultivo||'—'}</td>
+      <td>${h.lotes||'—'}</td>
+      <td class="art-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openHistItem(${i})">Abrir</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadHistItem(${i})">Descargar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteHistItem(${i})">Eliminar</button>
+      </td>
+    </tr>`).join('')
+    : `<tr><td colspan="6" style="text-align:center;color:var(--txt3);padding:20px">Todavía no guardaste ninguna OT desde este navegador.</td></tr>`;
+  document.getElementById('hist-count').textContent = histCache.length+' orden(es) en el acceso rápido de este navegador';
+}
+function openHistItem(i){ loadOT(histCache[i]); toast('OT SE-'+pad(histCache[i].numero)+' abierta'); }
+function downloadHistItem(i){ downloadOTFile(histCache[i]); }
+function deleteHistItem(i){
+  if(!confirm('¿Sacar esta OT del acceso rápido? (el archivo .json que ya descargaste en tu PC no se borra)')) return;
+  let hist=JSON.parse(localStorage.getItem('ots_history')||'[]');
+  const target=histCache[i];
+  hist=hist.filter(x=>x._id!==target._id);
+  localStorage.setItem('ots_history', JSON.stringify(hist));
+  renderHistTable();
+  toast('OT quitada del acceso rápido');
+}
+
 // ===== RESET =====
 function resetForm(){
   if(!confirm('¿Limpiar el formulario para una nueva OT?')) return;
   pid=1; s.numero=String(parseInt(s.numero||102)+1);
   s.contratista=''; s.descripcionLabor=''; s.lotes=''; s.sementera=''; s.hectareas=''; s.observaciones='';
-  s.productos=[{id:pid++,codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',stockDisponible:'',remitido:'',devolucion:''}];
+  s.productos=[{id:pid++,codts:'',codluc:'',descripcion:'',dosisPorHa:'',unidad:'lt',total:'',stockDisponible:'',remitido:'',devolucion:''}];
   document.getElementById('f-num').value=s.numero;
   document.getElementById('f-cont').value='';
   document.getElementById('f-desclab').value='';
